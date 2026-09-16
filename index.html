@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MUST SYSTEM</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%2300ff41'>⌂</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body { height: 100%; overflow: hidden; }
+
+        body {
+            background: #000;
+            color: #00ff41;
+            font-family: 'Courier New', Tahoma, monospace;
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        /* خطوط CRT */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, rgba(0,255,65,0.03) 0 1px, transparent 1px 3px);
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        /* ==================== MATRIX ==================== */
+        #matrix {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 1;
+            opacity: 0.13;
+        }
+
+        .scan-line {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            z-index: 5;
+            animation: scan 5s linear infinite;
+            opacity: 0.4;
+        }
+
+        @keyframes scan {
+            0% { top: -2px; }
+            100% { top: 100vh; }
+        }
+
+        /* ==================== BOOT ==================== */
+        #bootScreen {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 25px;
+            font-size: 13px;
+        }
+
+        #bootScreen .boot-line {
+            margin: 2px 0;
+            opacity: 0;
+            animation: bootFade 0.2s forwards;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        @keyframes bootFade { to { opacity: 1; } }
+
+        /* ==================== الحاوية الرئيسية ==================== */
+        .container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 8px;
+            gap: 8px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border: 1px solid #00ff41;
+            background: rgba(0, 20, 0, 0.9);
+            box-shadow: 0 0 15px rgba(0,255,65,0.2), inset 0 0 20px rgba(0,255,65,0.05);
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            background: #00ff41;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+            box-shadow: 0 0 8px #00ff41;
+        }
+
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* زر النظام - الزاوية العلوية اليسرى */
+        .xp-open-btn {
+            margin-inline-start: auto;
+            padding: 10px 18px;
+            background: rgba(0, 40, 0, 0.9);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            font-family: 'Courier New', Tahoma, monospace;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 1px;
+            animation: xpBtnPulse 2s infinite;
+            box-shadow: 0 0 12px rgba(0,255,65,0.4), inset 0 0 10px rgba(0,255,65,0.1);
+            transition: all 0.2s;
+        }
+
+        @keyframes xpBtnPulse {
+            0%, 100% { box-shadow: 0 0 12px rgba(0,255,65,0.4), inset 0 0 10px rgba(0,255,65,0.1); }
+            50% { box-shadow: 0 0 25px rgba(0,255,65,0.8), inset 0 0 15px rgba(0,255,65,0.2); }
+        }
+
+        .xp-open-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; right: -100%;
+            width: 100%; height: 2px;
+            background: #00ff41;
+            animation: btnScan 2s linear infinite;
+        }
+
+        @keyframes btnScan {
+            0% { right: -100%; }
+            100% { right: 100%; }
+        }
+
+        .xp-open-btn:hover {
+            background: #00ff41;
+            color: #000;
+            text-shadow: none;
+        }
+
+        .xp-open-btn:active { transform: scale(0.95); }
+
+        /* ==================== المحتوى ==================== */
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .terminal-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #00ff41;
+            background: rgba(0, 8, 0, 0.92);
+            min-width: 0;
+            box-shadow: inset 0 0 30px rgba(0,255,65,0.05);
+        }
+
+        .terminal-header {
+            padding: 6px 12px;
+            background: rgba(0, 40, 0, 0.8);
+            border-bottom: 1px solid #00ff41;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        .terminal-body {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.6;
+            min-height: 0;
+        }
+
+        .terminal-body::-webkit-scrollbar { width: 4px; }
+        .terminal-body::-webkit-scrollbar-thumb { background: #00ff41; }
+        .terminal-body::-webkit-scrollbar-track { background: #001a00; }
+
+        .terminal-input {
+            display: flex;
+            padding: 8px 10px;
+            border-top: 1px solid #00ff41;
+            flex-shrink: 0;
+        }
+
+        .terminal-input input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #00ff41;
+            font-family: 'Courier New', Tahoma, monospace;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .side-panel {
+            width: 270px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+            min-height: 0;
+        }
+
+        .info-box {
+            border: 1px solid #00ff41;
+            background: rgba(0, 15, 0, 0.9);
+            padding: 10px;
+        }
+
+        .info-title {
+            font-size: 11px;
+            border-bottom: 1px solid #003b0f;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .btn {
+            padding: 10px 6px;
+            background: rgba(0, 30, 0, 0.8);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            cursor: pointer;
+            font-family: 'Courier New', Tahoma, monospace;
+            font-size: 11px;
+            transition: all 0.15s;
+            text-shadow: 0 0 4px #00ff41;
+        }
+
+        .btn:hover {
+            background: #00ff41;
+            color: #000;
+            text-shadow: none;
+            box-shadow: 0 0 15px #00ff41;
+        }
+
+        .btn:active { transform: scale(0.95); }
+
+        .btn.danger {
+            border-style: dashed;
+            animation: dangerBlink 1.5s infinite;
+        }
+
+        @keyframes dangerBlink {
+            0%,100% { border-color: #00ff41; }
+            50% { border-color: #00520f; }
+        }
+
+        .btn.xp-launch {
+            width: 100%;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            animation: xpBtnPulse 2s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 10px;
+            font-size: 11px;
+        }
+
+        .stats-grid .val { color: #fff; text-shadow: 0 0 4px #00ff41; }
+
+        .data-stream {
+            font-size: 9px;
+            color: #007a1f;
+            overflow: hidden;
+            flex: 1;
+            min-height: 0;
+            line-height: 1.5;
+            direction: ltr;
+        }
+
+        .stream-box { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+        .footer {
+            padding: 4px;
+            text-align: center;
+            font-size: 10px;
+            color: #00520f;
+            border-top: 1px solid #003b0f;
+            flex-shrink: 0;
+        }
+
+        /* شريط التقدم */
+        .progress-container {
+            width: 100%;
+            height: 16px;
+            background: #011;
+            border: 1px solid #00ff41;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: repeating-linear-gradient(90deg, #00ff41 0 8px, #008f2f 8px 12px);
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        .progress-text {
+            font-size: 10px;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        /* ==================== GLITCH ==================== */
+        .glitch { position: relative; display: inline-block; }
+
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0.8;
+        }
+
+        .glitch::before {
+            animation: glitch-1 2.5s infinite;
+            color: #fff;
+            clip-path: inset(0 0 0 0);
+        }
+
+        .glitch::after {
+            animation: glitch-2 2.5s infinite;
+            color: #007a1f;
+        }
+
+        @keyframes glitch-1 {
+            0%, 92%, 100% { clip-path: inset(0 0 100% 0); transform: none; }
+            93% { clip-path: inset(20% 0 40% 0); transform: translate(-2px, 0); }
+            95% { clip-path: inset(60% 0 10% 0); transform: translate(2px, 0); }
+            97% { clip-path: inset(40% 0 30% 0); transform: translate(-1px, 0); }
+        }
+
+        @keyframes glitch-2 {
+            0%, 90%, 100% { clip-path: inset(0 0 100% 0); transform: none; }
+            91% { clip-path: inset(50% 0 20% 0); transform: translate(2px, 0); }
+            94% { clip-path: inset(10% 0 70% 0); transform: translate(-2px, 0); }
+            98% { clip-path: inset(70% 0 5% 0); transform: translate(1px, 0); }
+        }
+
+        /* ==================== تنبيه أحمر (تبقى خضراء داكنة) ==================== */
+        #redAlert {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 255, 65, 0.06);
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #redAlert.active { opacity: 1; animation: alertPulse 0.5s infinite; }
+
+        @keyframes alertPulse {
+            0%,100% { background: rgba(0,255,65,0.03); }
+            50% { background: rgba(0,255,65,0.12); }
+        }
+
+        #warningPopup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: #001500;
+            border: 1px solid #00ff41;
+            padding: 25px;
+            z-index: 500;
+            text-align: center;
+            transition: transform 0.25s;
+            box-shadow: 0 0 50px rgba(0,255,65,0.4);
+            max-width: 90vw;
+        }
+
+        #warningPopup.active { transform: translate(-50%, -50%) scale(1); }
+
+        #warningPopup h2 {
+            margin-bottom: 12px;
+            text-shadow: 0 0 10px #00ff41;
+            font-size: 18px;
+        }
+
+        #warningPopup p { font-size: 13px; margin-bottom: 15px; }
+
+        /* ==================== إقلاع XP ==================== */
+        #xpBoot {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 3000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #xpBoot.active { display: flex; }
+
+        .xp-boot-logo {
+            font-size: 50px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-shadow: 0 0 20px #00ff41, 0 0 40px #00ff41;
+            animation: bootFlicker 0.15s infinite;
+        }
+
+        @keyframes bootFlicker {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        .xp-boot-bar {
+            width: 220px;
+            height: 12px;
+            border: 1px solid #00ff41;
+            margin-top: 25px;
+            padding: 2px;
+        }
+
+        .xp-boot-inner {
+            height: 100%;
+            background: repeating-linear-gradient(90deg, #00ff41 0 6px, transparent 6px 8px);
+            animation: bootLoad 3s linear forwards;
+            width: 0%;
+        }
+
+        @keyframes bootLoad { to { width: 100%; } }
+
+        .xp-boot-text {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #007a1f;
+        }
+
+        /* ==================== سطح مكتب XP الهاكر ==================== */
+        #xpDesktop {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            background:
+                linear-gradient(rgba(0,255,65,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,65,0.04) 1px, transparent 1px),
+                radial-gradient(ellipse at center, #001a00 0%, #000 100%);
+            background-size: 30px 30px, 30px 30px, 100% 100%;
+        }
+
+        #xpDesktop.active { display: flex; }
+
+        .xp-desktop-area {
+            flex: 1;
+            position: relative;
+            padding: 15px;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .xp-icons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, auto);
+            gap: 8px 4px;
+            justify-content: start;
+            align-content: start;
+        }
+
+        .xp-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 82px;
+            cursor: pointer;
+            padding: 8px 4px;
+            transition: all 0.15s;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+
+        .xp-icon:hover {
+            background: rgba(0, 255, 65, 0.08);
+            border: 1px solid rgba(0, 255, 65, 0.4);
+        }
+
+        .xp-icon:active { transform: scale(0.93); }
+
+        .icon-sym {
+            font-size: 32px;
+            color: #00ff41;
+            text-shadow: 0 0 12px #00ff41, 0 0 25px rgba(0,255,65,0.5);
+            margin-bottom: 4px;
+            line-height: 1;
+        }
+
+        .icon-label {
+            color: #00ff41;
+            font-size: 10px;
+            text-shadow: 0 0 5px rgba(0,255,65,0.6), 1px 1px 2px #000;
+        }
+
+        /* شريط المهام */
+        .xp-taskbar {
+            height: 40px;
+            background: linear-gradient(180deg, #001a06 0%, #003b0f 50%, #001a06 100%);
+            border-top: 1px solid #00ff41;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            gap: 6px;
+            flex-shrink: 0;
+            box-shadow: 0 -3px 15px rgba(0,255,65,0.2);
+        }
+
+        .xp-start-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 16px;
+            background: linear-gradient(180deg, #003b0f, #001a06);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Courier New', Tahoma, monospace;
+            text-shadow: 0 0 6px #00ff41;
+            transition: all 0.15s;
+        }
+
+        .xp-start-btn:hover {
+            background: #00ff41;
+            color: #000;
+            text-shadow: none;
+            box-shadow: 0 0 15px #00ff41;
+        }
+
+        .xp-taskbar-items {
+            flex: 1;
+            display: flex;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .xp-taskbar-item {
+            padding: 4px 10px;
+            background: rgba(0, 60, 0, 0.6);
+            border: 1px solid #008f2f;
+            color: #00ff41;
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .xp-taskbar-item:hover { border-color: #00ff41; }
+
+        .xp-system-tray {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            border: 1px solid #008f2f;
+            color: #00ff41;
+            font-size: 12px;
+        }
+
+        .tray-icon { cursor: pointer; text-shadow: 0 0 6px #00ff41; }
+
+        /* قائمة ابدأ */
+        #startMenu {
+            position: fixed;
+            bottom: 40px;
+            inset-inline-start: 0;
+            width: 300px;
+            max-height: 70vh;
+            background: rgba(0, 12, 0, 0.97);
+            border: 1px solid #00ff41;
+            border-bottom: none;
+            box-shadow: 0 0 30px rgba(0,255,65,0.3);
+            z-index: 2500;
+            display: none;
+            flex-direction: column;
+        }
+
+        #startMenu.active { display: flex; animation: menuUp 0.15s; }
+
+        @keyframes menuUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .start-header {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #008f2f;
+            background: rgba(0, 40, 0, 0.8);
+        }
+
+        .start-avatar {
+            width: 40px; height: 40px;
+            border: 1px solid #00ff41;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        .start-username { font-size: 14px; font-weight: bold; text-shadow: 0 0 6px #00ff41; }
+        .start-sub { font-size: 10px; color: #007a1f; }
+
+        .start-body { flex: 1; overflow-y: auto; padding: 6px; }
+
+        .start-body::-webkit-scrollbar { width: 4px; }
+        .start-body::-webkit-scrollbar-thumb { background: #00ff41; }
+
+        .start-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: background 0.1s;
+            font-size: 12px;
+        }
+
+        .start-item:hover { background: rgba(0, 255, 65, 0.12); }
+
+        .start-item .sym {
+            font-size: 18px;
+            color: #00ff41;
+            text-shadow: 0 0 8px #00ff41;
+            width: 24px;
+            text-align: center;
+        }
+
+        .start-footer {
+            padding: 8px;
+            display: flex;
+            gap: 6px;
+            border-top: 1px solid #008f2f;
+        }
+
+        .start-footer button {
+            flex: 1;
+            padding: 8px;
+            background: rgba(0, 40, 0, 0.8);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            cursor: pointer;
+            font-family: 'Courier New', Tahoma, monospace;
+            font-size: 11px;
+        }
+
+        .start-footer button:hover { background: #00ff41; color: #000; }
+
+        /* نوافذ XP */
+        .xp-window {
+            position: absolute;
+            background: rgba(0, 10, 0, 0.97);
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 25px rgba(0,255,65,0.25);
+            display: none;
+            flex-direction: column;
+            z-index: 2200;
+            max-width: 94%;
+            max-height: calc(100% - 10px);
+        }
+
+        .xp-window.active { display: flex; animation: winOpen 0.15s; }
+
+        @keyframes winOpen {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .xp-window-titlebar {
+            background: linear-gradient(180deg, #00481a 0%, #001a06 100%);
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+            flex-shrink: 0;
+            border-bottom: 1px solid #008f2f;
+        }
+
+        .xp-window-titlebar .title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #00ff41;
+            text-shadow: 0 0 6px #00ff41;
+        }
+
+        .xp-window-controls { display: flex; gap: 4px; }
+
+        .xp-window-controls button {
+            width: 20px; height: 20px;
+            border: 1px solid #00ff41;
+            background: rgba(0, 40, 0, 0.8);
+            color: #00ff41;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+        }
+
+        .xp-window-controls button:hover { background: #00ff41; color: #000; }
+
+        .xp-window-body {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            font-size: 12px;
+            min-height: 0;
+        }
+
+        .xp-window-body::-webkit-scrollbar { width: 4px; }
+        .xp-window-body::-webkit-scrollbar-thumb { background: #00ff41; }
+
+        /* عناصر داخل النوافذ */
+        .sim-badge {
+            display: inline-block;
+            font-size: 9px;
+            padding: 2px 8px;
+            border: 1px dashed #007a1f;
+            color: #007a1f;
+            margin-bottom: 10px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .tool-output {
+            background: #000;
+            border: 1px solid #003b0f;
+            padding: 8px;
+            font-size: 10px;
+            min-height: 100px;
+            max-height: 180px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .tool-output::-webkit-scrollbar { width: 3px; }
+        .tool-output::-webkit-scrollbar-thumb { background: #00ff41; }
+
+        .file-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+            gap: 8px;
+        }
+
+        .file-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 4px;
+            border: 1px solid #003b0f;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .file-card:hover {
+            border-color: #00ff41;
+            box-shadow: 0 0 12px rgba(0,255,65,0.3);
+        }
+
+        .file-card .fsym {
+            font-size: 26px;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+            margin-bottom: 4px;
+        }
+
+        .file-card .fname { font-size: 9px; color: #007a1f; }
+
+        .net-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border: 1px solid #003b0f;
+            margin-bottom: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .net-row:hover { border-color: #00ff41; }
+
+        .net-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #00ff41;
+            box-shadow: 0 0 6px #00ff41;
+            animation: blink 1.5s infinite;
+            flex-shrink: 0;
+        }
+
+        .net-dot.off {
+            background: #003b0f;
+            box-shadow: none;
+            animation: none;
+        }
+
+        .cams-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .cam-box {
+            position: relative;
+            border: 1px solid #008f2f;
+            overflow: hidden;
+        }
+
+        .cam-box canvas { width: 100%; display: block; }
+
+        .cam-label {
+            position: absolute;
+            top: 4px; inset-inline-start: 4px;
+            font-size: 9px;
+            color: #00ff41;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 6px;
+            border: 1px solid #003b0f;
+        }
+
+        .track-map {
+            position: relative;
+            height: 200px;
+            border: 1px solid #00ff41;
+            background:
+                linear-gradient(rgba(0,255,65,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,65,0.06) 1px, transparent 1px),
+                #000800;
+            background-size: 20px 20px, 20px 20px;
+            overflow: hidden;
+        }
+
+        .map-point {
+            position: absolute;
+            width: 7px; height: 7px;
+            background: #00ff41;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff41;
+            animation: mapPulse 2s infinite;
+            cursor: pointer;
+        }
+
+        @keyframes mapPulse {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.6); opacity: 0.6; }
+        }
+
+        .db-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+
+        .db-table th {
+            border: 1px solid #008f2f;
+            padding: 5px;
+            background: rgba(0, 40, 0, 0.6);
+            color: #00ff41;
+            text-align: right;
+        }
+
+        .db-table td {
+            border: 1px solid #003b0f;
+            padding: 5px;
+            color: #007a1f;
+            cursor: pointer;
+        }
+
+        .db-table tr:hover td { color: #00ff41; background: rgba(0,255,65,0.05); }
+
+        .cmd-screen {
+            background: #000;
+            height: 220px;
+            overflow-y: auto;
+            padding: 8px;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .cmd-screen::-webkit-scrollbar { width: 3px; }
+        .cmd-screen::-webkit-scrollbar-thumb { background: #00ff41; }
+
+        .cmd-field {
+            width: 100%;
+            background: #000;
+            border: none;
+            border-top: 1px solid #008f2f;
+            color: #00ff41;
+            padding: 8px;
+            font-family: 'Courier New', Tahoma, monospace;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid #001a00;
+            font-size: 12px;
+        }
+
+        .setting-row input { accent-color: #00ff41; }
+
+        .about-box {
+            border: 1px solid #003b0f;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 11px;
+            line-height: 1.8;
+            color: #007a1f;
+        }
+
+        .about-box b { color: #00ff41; }
+
+        /* إشعار */
+        .notification {
+            position: fixed;
+            bottom: 50px;
+            inset-inline-start: 15px;
+            background: rgba(0, 15, 0, 0.97);
+            border: 1px solid #00ff41;
+            padding: 12px 16px;
+            z-index: 2600;
+            display: none;
+            max-width: 280px;
+            box-shadow: 0 0 20px rgba(0,255,65,0.3);
+        }
+
+        .notification.show { display: block; animation: notifIn 0.2s; }
+
+        @keyframes notifIn {
+            from { transform: translateY(15px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .notification .ntitle {
+            color: #00ff41;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            text-shadow: 0 0 6px #00ff41;
+        }
+
+        .notification .nmsg { font-size: 11px; color: #007a1f; }
+
+        /* ==================== موبايل ==================== */
+        @media (max-width: 768px) {
+            .main-content { flex-direction: column; }
+            .side-panel {
+                width: 100%;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .btn-grid { grid-template-columns: repeat(4, 1fr); }
+            .btn { padding: 8px 4px; font-size: 10px; }
+            .btn.xp-launch { grid-column: span 4; padding: 9px; }
+            .stream-box { display: none; }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); font-size: 9px; }
+            .info-box { padding: 7px; }
+            .info-title { margin-bottom: 5px; font-size: 10px; }
+            .logo { font-size: 15px; }
+            .xp-open-btn { padding: 8px 12px; font-size: 11px; }
+            .xp-icons-grid { grid-template-columns: repeat(4, auto); gap: 4px 2px; }
+            .xp-icon { width: 74px; padding: 5px 2px; }
+            .icon-sym { font-size: 26px; }
+            .icon-label { font-size: 9px; }
+            .terminal-body { font-size: 12px; }
+            #startMenu { width: 100%; }
+            .footer { font-size: 8px; }
+        }
+
+        @media (max-height: 600px) {
+            .stream-box { display: none; }
+            .terminal-body { font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة الإقلاع -->
+    <div id="bootScreen">
+        <div id="bootLines"></div>
+    </div>
+
+    <!-- المطر -->
+    <canvas id="matrix"></canvas>
+    <div class="scan-line"></div>
+    <div id="redAlert"></div>
+
+    <!-- ==================== الواجهة الرئيسية ==================== -->
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <div class="logo glitch" data-text="MUST.exe">MUST.exe</div>
+            <div class="header-status">
+                <span class="status-dot"></span>
+                <span>متصل | مشفر</span>
+            </div>
+            <button class="xp-open-btn" onclick="openXPDesktop()">
+                ⌂ نظام MUST XP
+            </button>
+        </div>
+
+        <div class="main-content">
+            <!-- الطرفية -->
+            <div class="terminal-panel">
+                <div class="terminal-header">
+                    <span>root@must:~# الطرفية</span>
+                    <span>pts/0</span>
+                </div>
+                <div class="terminal-body" id="terminalBody">
+                    <div>[النظام] MUST الطرفية الآمنة v3.7</div>
+                    <div style="color:#007a1f;">[النظام] جميع القنوات مشفرة...</div>
+                    <br>
+                    <div id="terminalOutput"></div>
+                </div>
+                <div class="terminal-input">
+                    <span>root@must:~$</span>
+                    <input type="text" id="terminalInput" autocomplete="off" placeholder="اكتب 'مساعدة'...">
+                </div>
+            </div>
+
+            <!-- اللوحة الجانبية -->
+            <div class="side-panel">
+                <div class="info-box">
+                    <div class="info-title">⚡ الإجراءات</div>
+                    <div class="btn-grid">
+                        <button class="btn" onclick="runScan()">◎ فحص النظام</button>
+                        <button class="btn" onclick="showNetwork()">⌗ فحص الشبكة</button>
+                        <button class="btn" onclick="injectCode()">⤓ الحقن</button>
+                        <button class="btn danger" onclick="activateRedAlert()">☢ التدمير</button>
+                        <button class="btn xp-launch" onclick="openXPDesktop()">
+                            ⌂ الدخول إلى نظام MUST XP
+                        </button>
+                    </div>
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar" id="progressBar"></div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-title">📊 الإحصائيات</div>
+                    <div class="stats-grid">
+                        <span>المعالج: <span class="val" id="cpuUsage">0%</span></span>
+                        <span>الذاكرة: <span class="val" id="ramUsage">0%</span></span>
+                        <span>الشبكة: <span class="val" id="netSpeed">0</span></span>
+                        <span>التهديدات: <span class="val" id="threats">0</span></span>
+                    </div>
+                </div>
+
+                <div class="info-box stream-box">
+                    <div class="info-title">📡 تدفق البيانات</div>
+                    <div class="data-stream" id="dataStream"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            MUST SECURITY SYSTEMS © 2024 | @mustssm
+        </div>
+    </div>
+
+    <!-- ==================== إقلاع XP ==================== -->
+    <div id="xpBoot">
+        <div class="xp-boot-logo">MUST</div>
+        <div class="xp-boot-text">نظام التشغيل الآمن - الإصدار 5.0</div>
+        <div class="xp-boot-bar"><div class="xp-boot-inner"></div></div>
+        <div class="xp-boot-text" style="margin-top:10px;">جاري تحميل الوحدات المشفرة...</div>
+    </div>
+
+    <!-- ==================== سطح مكتب XP ==================== -->
+    <div id="xpDesktop">
+        <div class="xp-desktop-area" id="desktopArea">
+            <div class="xp-icons-grid">
+                <div class="xp-icon" onclick="openXPApp('myComputer')">
+                    <div class="icon-sym">⌂</div>
+                    <div class="icon-label">جهازي</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('hackerTools')">
+                    <div class="icon-sym">⚒</div>
+                    <div class="icon-label">أدوات الاختراق</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('surveillance')">
+                    <div class="icon-sym">◉</div>
+                    <div class="icon-label">المراقبة</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('network')">
+                    <div class="icon-sym">⌗</div>
+                    <div class="icon-label">الشبكة</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('cmd')">
+                    <div class="icon-sym">▊</div>
+                    <div class="icon-label">سطر الأوامر</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('secretFiles')">
+                    <div class="icon-sym">▤</div>
+                    <div class="icon-label">الملفات السرية</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('cameras')">
+                    <div class="icon-sym">▣</div>
+                    <div class="icon-label">الكاميرات</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('worldMap')">
+                    <div class="icon-sym">✥</div>
+                    <div class="icon-label">خريطة التتبع</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('database')">
+                    <div class="icon-sym">▦</div>
+                    <div class="icon-label">قاعدة البيانات</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('recycle')">
+                    <div class="icon-sym">⌫</div>
+                    <div class="icon-label">سلة المحذوفات</div>
+                </div>
+                <div class="xp-icon" onclick="openXPApp('settings')">
+                    <div class="icon-sym">⚙</div>
+                    <div class="icon-label">الإعدادات</div>
+                </div>
+                <div class="xp-icon" onclick="closeXPDesktop()">
+                    <div class="icon-sym">⏻</div>
+                    <div class="icon-label">الخروج للطرفية</div>
+                </div>
+            </div>
+
+            <!-- ===== النوافذ ===== -->
+
+            <!-- جهازي -->
+            <div class="xp-window" id="win-myComputer" style="top:3%; inset-inline-start:5%; width:420px; height:75%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>⌂</span> جهازي</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('myComputer')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <span class="sim-badge">[ وضع المحاكاة ]</span>
+                    <div class="file-cards">
+                        <div class="file-card" onclick="notify('القرص C', 'القرص الرئيسي - مشفر بالكامل')">
+                            <div class="fsym">▤</div><div class="fname">القرص (C:)</div>
+                        </div>
+                        <div class="file-card" onclick="notify('القرص D', 'الوصول مرفوض - صلاحيات غير كافية')">
+                            <div class="fsym">▥</div><div class="fname">القرص (D:)</div>
+                        </div>
+                        <div class="file-card" onclick="notify('قناة آمنة', 'القناة مشفرة - AES-256')">
+                            <div class="fsym">⇄</div><div class="fname">قناة آمنة</div>
+                        </div>
+                        <div class="file-card" onclick="notify('عقدة الشبكة', '7 عقد بروكسي نشطة')">
+                            <div class="fsym">⌗</div><div class="fname">عقدة الشبكة</div>
+                        </div>
+                    </div>
+                    <div class="about-box" style="margin-top:12px;">
+                        <div><b>النظام:</b> MUST XP Professional</div>
+                        <div><b>النواة:</b> v5.0.2600-secure</div>
+                        <div><b>التشفير:</b> AES-256 / RSA-4096</div>
+                        <div><b>الحالة:</b> وضع التخفي مفعّل</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- أدوات الاختراق -->
+            <div class="xp-window" id="win-hackerTools" style="top:2%; inset-inline-start:10%; width:480px; height:80%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>⚒</span> أدوات الاختراق</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('hackerTools')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <span class="sim-badge">[ وضع المحاكاة - كل النتائج وهمية ]</span>
+                    <div class="tool-grid">
+                        <button class="btn" onclick="toolDDOS()">⇉ هجوم DDoS</button>
+                        <button class="btn" onclick="toolInject()">⤓ حقن الحمولة</button>
+                        <button class="btn" onclick="toolScanPorts()">◎ مسح المنافذ</button>
+                        <button class="btn" onclick="toolBypass()">⇄ تجاوز الحماية</button>
+                    </div>
+                    <div class="tool-output" id="toolOutput">
+                        <div style="color:#007a1f;">[النظام] الأدوات جاهزة...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- المراقبة -->
+            <div class="xp-window" id="win-surveillance" style="top:5%; inset-inline-start:15%; width:380px; height:70%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>◉</span> المراقبة</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('surveillance')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <span class="sim-badge">[ وضع المحاكاة ]</span>
+                    <div id="targetList"></div>
+                </div>
+            </div>
+
+            <!-- الشبكة -->
+            <div class="xp-window" id="win-network" style="top:4%; inset-inline-start:8%; width:400px; height:72%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>⌗</span> الشبكة العالمية</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('network')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <div id="networkList"></div>
+                </div>
+            </div>
+
+            <!-- سطر الأوامر -->
+            <div class="xp-window" id="win-cmd" style="top:3%; inset-inline-start:12%; width:460px; height:70%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>▊</span> موجه الأوامر</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('cmd')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body" style="padding:0; display:flex; flex-direction:column;">
+                    <div class="cmd-screen" id="cmdScreen">
+                        <div>MUST OS [الإصدار 5.0]</div>
+                        <div style="color:#007a1f;">(ج) MUST Systems 2024</div>
+                        <br>
+                        <div style="color:#007a1f;">اكتب "مساعدة" للأوامر</div>
+                        <br>
+                    </div>
+                    <input type="text" class="cmd-field" id="cmdField" placeholder="C:\MUST\>" autocomplete="off">
+                </div>
+            </div>
+
+            <!-- الملفات السرية -->
+            <div class="xp-window" id="win-secretFiles" style="top:5%; inset-inline-start:10%; width:420px; height:70%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>▤</span> الملفات السرية</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('secretFiles')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <span class="sim-badge">[ وضع المحاكاة ]</span>
+                    <div class="file-cards">
+                        <div class="file-card" onclick="openSecret('قواعد البيانات')">
+                            <div class="fsym">▦</div><div class="fname">قواعد البيانات</div>
+                        </div>
+                        <div class="file-card" onclick="openSecret('المستندات')">
+                            <div class="fsym">▤</div><div class="fname">المستندات</div>
+                        </div>
+                        <div class="file-card" onclick="openSecret('أرشيف السجلات')">
+                            <div class="fsym">▥</div><div class="fname">أرشيف السجلات</div>
+                        </div>
+                        <div class="file-card" onclick="openSecret('النسخ المشفرة')">
+                            <div class="fsym">◩</div><div class="fname">النسخ المشفرة</div>
+                        </div>
+                        <div class="file-card" onclick="openSecret('ملفات النظام')">
+                            <div class="fsym">▣</div><div class="fname">ملفات النظام</div>
+                        </div>
+                        <div class="file-card" onclick="openSecret('الخزنة الرقمية')">
+                            <div class="fsym">◆</div><div class="fname">الخزنة الرقمية</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الكاميرات -->
+            <div class="xp-window" id="win-cameras" style="top:3%; inset-inline-start:8%; width:440px; height:75%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>▣</span> الكاميرات</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('cameras')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <span class="sim-badge">[ تأثيرات بصرية فقط ]</span>
+                    <div class="cams-grid">
+                        <div class="cam-box"><canvas id="cam1"></canvas><div class="cam-label">CAM-01 | نشط</div></div>
+                        <div class="cam-box"><canvas id="cam2"></canvas><div class="cam-label">CAM-02 | نشط</div></div>
+                        <div class="cam-box"><canvas id="cam3"></canvas><div class="cam-label">CAM-03 | نشط</div></div>
+                        <div class="cam-box"><canvas id="cam4"></canvas><div class="cam-label">CAM-04 | نشط</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الخريطة -->
+            <div class="xp-window" id="win-worldMap" style="top:4%; inset-inline-start:10%; width:460px; height:72%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>✥</span> خريطة التتبع</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('worldMap')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <div class="track-map" id="trackMap"></div>
+                    <div style="margin-top:8px; font-size:11px; color:#007a1f;">
+                        العقد النشطة: <span style="color:#00ff41;">7</span> |
+                        القنوات المشفرة: <span style="color:#00ff41;">12</span> |
+                        الحالة: <span style="color:#00ff41;">مستقرة</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قاعدة البيانات -->
+            <div class="xp-window" id="win-database" style="top:3%; inset-inline-start:8%; width:460px; height:75%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>▦</span> قاعدة البيانات</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('database')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <span class="sim-badge">[ سجلات وهمية ]</span>
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th>المعرف</th><th>العقدة</th><th>الحالة</th><th>التشفير</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dbBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- سلة المحذوفات -->
+            <div class="xp-window" id="win-recycle" style="top:6%; inset-inline-start:18%; width:360px; height:65%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>⌫</span> سلة المحذوفات</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('recycle')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <div class="file-cards">
+                        <div class="file-card" onclick="notify('ملف محذوف', 'تم تدمير الملف نهائياً - لا استعادة')">
+                            <div class="fsym">␡</div><div class="fname">سجلات قديمة</div>
+                        </div>
+                        <div class="file-card" onclick="notify('ملف محذوف', 'تم تدمير الملف نهائياً - لا استعادة')">
+                            <div class="fsym">␡</div><div class="fname">بيانات مؤقتة</div>
+                        </div>
+                        <div class="file-card" onclick="notify('ملف محذوف', 'تم تدمير الملف نهائياً - لا استعادة')">
+                            <div class="fsym">␡</div><div class="fname">آثار الاتصال</div>
+                        </div>
+                    </div>
+                    <button class="btn" style="width:100%; margin-top:12px;" onclick="notify('تنظيف', 'تم إفراغ السلة وإتلاف البيانات')">
+                        ␡ إفراغ السلة
+                    </button>
+                </div>
+            </div>
+
+            <!-- الإعدادات -->
+            <div class="xp-window" id="win-settings" style="top:5%; inset-inline-start:15%; width:380px; height:70%;">
+                <div class="xp-window-titlebar">
+                    <div class="title"><span>⚙</span> الإعدادات</div>
+                    <div class="xp-window-controls">
+                        <button onclick="closeXPWindow('settings')">✕</button>
+                    </div>
+                </div>
+                <div class="xp-window-body">
+                    <div class="setting-row"><input type="checkbox" checked onchange="notify('الجدار الناري', 'تم تغيير الحالة')"> الجدار الناري</div>
+                    <div class="setting-row"><input type="checkbox" checked onchange="notify('التشفير', 'تم تغيير الحالة')"> التشفير التلقائي</div>
+                    <div class="setting-row"><input type="checkbox" checked onchange="notify('وضع التخفي', 'تم تغيير الحالة')"> وضع التخفي</div>
+                    <div class="setting-row"><input type="checkbox" onchange="notify('وضع الصمت', 'تم تغيير الحالة')"> وضع الصمت الكامل</div>
+                    <div class="about-box">
+                        <div><b>MUST OS</b> — الإصدار 5.0</div>
+                        <div><b>المطور:</b> مصطفى محمد</div>
+                        <div><b>التلقرام:</b> @mustssm</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط المهام -->
+        <div class="xp-taskbar">
+            <button class="xp-start-btn" onclick="toggleStartMenu(event)">
+                <span>⌂</span> ابدأ
+            </button>
+            <div class="xp-taskbar-items" id="taskbarItems">
+                <div class="xp-taskbar-item" onclick="notify('النظام', 'جميع الأنظمة تعمل بشكل طبيعي')">▊ MUST</div>
+            </div>
+            <div class="xp-system-tray">
+                <span class="tray-icon" onclick="notify('الشبكة', 'الاتصال مشفر عبر 7 عقد')">⌗</span>
+                <span class="tray-icon" onclick="notify('الحماية', 'الجدار الناري نشط')">⛨</span>
+                <span id="taskbarClock">--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- قائمة ابدأ -->
+    <div id="startMenu">
+        <div class="start-header">
+            <div class="start-avatar">⌂</div>
+            <div>
+                <div class="start-username">مصطفى محمد</div>
+                <div class="start-sub">MUST // root@must</div>
+            </div>
+        </div>
+        <div class="start-body">
+            <div class="start-item" onclick="openXPApp('hackerTools')"><span class="sym">⚒</span> أدوات الاختراق</div>
+            <div class="start-item" onclick="openXPApp('surveillance')"><span class="sym">◉</span> المراقبة</div>
+            <div class="start-item" onclick="openXPApp('cmd')"><span class="sym">▊</span> سطر الأوامر</div>
+            <div class="start-item" onclick="openXPApp('secretFiles')"><span class="sym">▤</span> الملفات السرية</div>
+            <div class="start-item" onclick="openXPApp('network')"><span class="sym">⌗</span> الشبكة</div>
+            <div class="start-item" onclick="openXPApp('cameras')"><span class="sym">▣</span> الكاميرات</div>
+            <div class="start-item" onclick="openXPApp('database')"><span class="sym">▦</span> قاعدة البيانات</div>
+            <div class="start-item" onclick="openXPApp('worldMap')"><span class="sym">✥</span> خريطة التتبع</div>
+            <div class="start-item" onclick="openXPApp('settings')"><span class="sym">⚙</span> الإعدادات</div>
+        </div>
+        <div class="start-footer">
+            <button onclick="closeXPDesktop()">⏻ إيقاف التشغيل</button>
+        </div>
+    </div>
+
+    <!-- إشعار -->
+    <div class="notification" id="notification">
+        <div class="ntitle" id="notifTitle"></div>
+        <div class="nmsg" id="notifMsg"></div>
+    </div>
+
+    <!-- تحذير -->
+    <div id="warningPopup">
+        <h2>☢ تحذير أمني ☢</h2>
+        <p id="warningText"></p>
+        <button class="btn" style="width:100%;" onclick="closePopup()">تأكيد</button>
+    </div>
+
+    <script>
+        // ==================== الإقلاع ====================
+        const bootMessages = [
+            "[الإقلاع] تحميل MUST OS v3.7.2...",
+            "[تم] تهيئة النواة...",
+            "[تم] بروتوكولات التشفير: AES-256",
+            "[تم] الجدار الناري: مفعل",
+            "[تم] نفق آمن: متصل",
+            "[تم] سلسلة العقد: 7 نشطة",
+            "[تحذير] كشف التسلل: نشط",
+            "[النظام] مرحباً بعودتك يا مصطفى.",
+            "[النظام] الوصول ممنوح. التحكم الكامل."
+        ];
+
+        const bootLines = document.getElementById('bootLines');
+        let bootIndex = 0;
+
+        function typeBootLine() {
+            if (bootIndex < bootMessages.length) {
+                const line = document.createElement('div');
+                line.className = 'boot-line';
+                line.textContent = bootMessages[bootIndex];
+                bootLines.appendChild(line);
+                bootIndex++;
+                setTimeout(typeBootLine, 130);
+            } else {
+                setTimeout(() => {
+                    document.getElementById('bootScreen').style.display = 'none';
+                    startTerminal();
+                }, 600);
+            }
+        }
+
+        // ==================== MATRIX ====================
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const matrixChars = '01أبتثجحخدذرزسشصضطظعغفقكلمنهوي0123456789@#$';
+        const fontSize = 14;
+        let columns = canvas.width / fontSize;
+        let drops = [];
+
+        for (let i = 0; i < columns; i++) drops[i] = Math.random() * canvas.height;
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00FF41';
+            ctx.font = fontSize + 'px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        // ==================== الطرفية ====================
+        const terminalBody = document.getElementById('terminalBody');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const terminalInput = document.getElementById('terminalInput');
+
+        function typeText(element, text, speed = 20) {
+            return new Promise(resolve => {
+                let i = 0;
+                const timer = setInterval(() => {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                    if (i >= text.length) { clearInterval(timer); resolve(); }
+                }, speed);
+            });
+        }
+
+        function addLine(text, color = '#00ff41') {
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.textContent = text;
+            terminalOutput.appendChild(line);
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+
+        async function startTerminal() {
+            await typeText(terminalOutput, '\n> تم إنشاء القناة المشفرة...\n');
+            await typeText(terminalOutput, '> تجاوز الحماية...\n');
+            await typeText(terminalOutput, '> الوصول ممنوح.\n');
+            await typeText(terminalOutput, '> اكتب "مساعدة" للأوامر.\n\n');
+            terminalInput.focus();
+        }
+
+        const commands = {
+            'مساعدة': () => {
+                addLine('\nالأوامر المتاحة:', '#fff');
+                addLine('  مساعدة      - عرض القائمة');
+                addLine('  فحص         - فحص النظام');
+                addLine('  حالة        - حالة النظام');
+                addLine('  من-أنا      - هوية المستخدم');
+                addLine('  اختراق      - تسلسل الاختراق');
+                addLine('  تدمير       - بروتوكول التدمير');
+                addLine('  مسح         - مسح الشاشة');
+                addLine('  سطح-المكتب  - نظام MUST XP');
+                addLine('  خروج        - قطع الاتصال');
+            },
+            'من-أنا': () => {
+                addLine('\n[المستخدم] root@must', '#fff');
+                addLine('[الصلاحيات] مدير النظام', '#fff');
+                addLine('[الوضع] تخفي كامل', '#fff');
+            },
+            'حالة': () => {
+                addLine('\n[حالة النظام]', '#fff');
+                addLine('  الجدار الناري:  ● نشط');
+                addLine('  النفق الآمن:    ● متصل');
+                addLine('  العقد:          ● 7 نشطة');
+                addLine('  التشفير:        ● AES-256');
+            },
+            'مسح': () => { terminalOutput.innerHTML = ''; },
+            'اختراق': () => { runHackSequence(); },
+            'فحص': () => { runScan(); },
+            'تدمير': () => { activateRedAlert(); },
+            'سطح-المكتب': () => { openXPDesktop(); },
+            'خروج': () => {
+                addLine('\n[النظام] قطع الاتصال...', '#ff0');
+                setTimeout(() => location.reload(), 800);
+            }
+        };
+
+        terminalInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const cmd = this.value.trim();
+                this.value = '';
+                addLine('root@must:~$ ' + cmd, '#fff');
+                if (commands[cmd]) commands[cmd]();
+                else if (cmd) addLine('أمر غير معروف: ' + cmd, '#007a1f');
+            }
+        });
+
+        // ==================== التقدم ====================
+        function showProgress(callback) {
+            const container = document.getElementById('progressContainer');
+            const bar = document.getElementById('progressBar');
+            const text = document.getElementById('progressText');
+            container.style.display = 'block';
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        container.style.display = 'none';
+                        if (callback) callback();
+                    }, 400);
+                }
+                bar.style.width = progress + '%';
+                text.textContent = Math.floor(progress) + '%';
+            }, 90);
+        }
+
+        // ==================== الإجراءات ====================
+        function runScan() {
+            addLine('\n[فحص] فحص النظام الكامل...', '#fff');
+            showProgress(() => {
+                addLine('[فحص] العناصر المفحوصة: ' + (Math.floor(Math.random()*40000)+10000));
+                addLine('[فحص] اكتمل الفحص.');
+            });
+        }
+
+        function injectCode() {
+            addLine('\n[حقن] تحضير الحمولة...', '#fff');
+            showProgress(() => {
+                addLine('[حقن] الحمولة مفعلة.');
+                addLine('[حقن] القناة آمنة.');
+            });
+        }
+
+        function showNetwork() {
+            addLine('\n[شبكة] مسح العقد...', '#fff');
+            showProgress(() => {
+                for (let i = 0; i < 4; i++) {
+                    addLine('[شبكة] عقدة-' + (i+1) + ': ' + (Math.random() > 0.3 ? 'مستقرة' : 'بطيئة'));
+                }
+                addLine('[شبكة] اكتمل المسح.');
+            });
+        }
+
+        function activateRedAlert() {
+            document.getElementById('redAlert').classList.add('active');
+            addLine('\n[☢] بروتوكول التدمير', '#fff');
+            addLine('[☢] الهدف مقفل...', '#fff');
+            showProgress(() => {
+                addLine('[☢] المهمة اكتملت.', '#fff');
+                document.getElementById('warningPopup').classList.add('active');
+                document.getElementById('warningText').textContent =
+                    'تم تنفيذ البروتوكول في وضع المحاكاة. جميع الأنظمة تعمل.';
+                setTimeout(() => document.getElementById('redAlert').classList.remove('active'), 4000);
+            });
+        }
+
+        function closePopup() {
+            document.getElementById('warningPopup').classList.remove('active');
+        }
+
+        function runHackSequence() {
+            const steps = [
+                'مسح المنافذ...',
+                'منفذ مفتوح: 22',
+                'منفذ مفتوح: 443',
+                'تجاوز المصادقة...',
+                'رفع الصلاحيات...',
+                'وصول كامل...',
+                'إخفاء الآثار...',
+                'اكتمل التسلسل. المحاكاة نجحت.'
+            ];
+            let step = 0;
+            addLine('\n[اختراق] بدء التسلسل...', '#fff');
+            const interval = setInterval(() => {
+                if (step < steps.length) {
+                    addLine('[اختراق] ' + steps[step]);
+                    step++;
+                } else clearInterval(interval);
+            }, 700);
+        }
+
+        // ==================== إحصائيات ====================
+        setInterval(() => {
+            document.getElementById('cpuUsage').textContent = Math.floor(Math.random() * 40 + 20) + '%';
+            document.getElementById('ramUsage').textContent = Math.floor(Math.random() * 50 + 30) + '%';
+            document.getElementById('netSpeed').textContent = (Math.random() * 100).toFixed(0) + 'MB';
+            document.getElementById('threats').textContent = Math.floor(Math.random() * 6);
+        }, 1000);
+
+        // ==================== التدفق ====================
+        function randomHash(len) {
+            let h = '';
+            const c = 'abcdef0123456789';
+            for (let i = 0; i < len; i++) h += c[Math.floor(Math.random() * c.length)];
+            return h;
+        }
+
+        const dataStreamEl = document.getElementById('dataStream');
+        setInterval(() => {
+            const hex = Math.floor(Math.random() * 0xFFFF).toString(16).padStart(4, '0').toUpperCase();
+            const line = `[${new Date().toLocaleTimeString()}] 0x${hex} > ${randomHash(12)} > OK`;
+            dataStreamEl.innerHTML = line + '<br>' + dataStreamEl.innerHTML.substring(0, 400);
+        }, 250);
+
+        // ==================== XP ====================
+        function openXPDesktop() {
+            const xpBoot = document.getElementById('xpBoot');
+            xpBoot.classList.add('active');
+            document.getElementById('startMenu').classList.remove('active');
+            setTimeout(() => {
+                xpBoot.classList.remove('active');
+                document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('xpDesktop').classList.add('active');
+                notify('النظام', 'مرحباً مصطفى - MUST XP جاهز');
+                startCameras();
+                loadTargets();
+                loadNetwork();
+                loadDatabase();
+                initMap();
+            }, 3200);
+        }
+
+        function closeXPDesktop() {
+            document.getElementById('startMenu').classList.remove('active');
+            document.getElementById('xpDesktop').classList.remove('active');
+            document.getElementById('mainContainer').style.display = 'flex';
+        }
+
+        function toggleStartMenu(e) {
+            e.stopPropagation();
+            document.getElementById('startMenu').classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#startMenu') && !e.target.closest('.xp-start-btn')) {
+                document.getElementById('startMenu').classList.remove('active');
+            }
+        });
+
+        const appTitles = {
+            'myComputer': '⌂ جهازي', 'hackerTools': '⚒ أدوات', 'surveillance': '◉ مراقبة',
+            'network': '⌗ شبكة', 'cmd': '▊ أوامر', 'secretFiles': '▤ ملفات',
+            'cameras': '▣ كاميرات', 'worldMap': '✥ خريطة', 'database': '▦ بيانات',
+            'recycle': '⌫ سلة', 'settings': '⚙ إعدادات'
+        };
+
+        function openXPApp(appName) {
+            document.getElementById('startMenu').classList.remove('active');
+            document.querySelectorAll('.xp-window').forEach(w => w.classList.remove('active'));
+            const win = document.getElementById('win-' + appName);
+            if (win) {
+                win.classList.add('active');
+                addToTaskbar(appName);
+            }
+        }
+
+        function closeXPWindow(appName) {
+            document.getElementById('win-' + appName).classList.remove('active');
+            const t = document.getElementById('task-' + appName);
+            if (t) t.remove();
+        }
+
+        function addToTaskbar(appName) {
+            const old = document.getElementById('task-' + appName);
+            if (old) old.remove();
+            const item = document.createElement('div');
+            item.className = 'xp-taskbar-item';
+            item.id = 'task-' + appName;
+            item.textContent = appTitles[appName] || appName;
+            item.onclick = () => openXPApp(appName);
+            document.getElementById('taskbarItems').appendChild(item);
+        }
+
+        // ==================== إشعارات ====================
+        function notify(title, msg) {
+            const n = document.getElementById('notification');
+            document.getElementById('notifTitle').textContent = title;
+            document.getElementById('notifMsg').textContent = msg;
+            n.classList.add('show');
+            clearTimeout(n._t);
+            n._t = setTimeout(() => n.classList.remove('show'), 2800);
+        }
+
+        // ==================== الكاميرات ====================
+        function startCameras() {
+            ['cam1','cam2','cam3','cam4'].forEach(id => {
+                const c = document.getElementById(id);
+                if (!c) return;
+                c.width = 200; c.height = 120;
+                const cx = c.getContext('2d');
+                setInterval(() => {
+                    cx.fillStyle = '#000800';
+                    cx.fillRect(0, 0, 200, 120);
+                    for (let i = 0; i < 120; i += 3) {
+                        cx.fillStyle = `rgba(0, ${Math.random()*90}, 0, 0.25)`;
+                        cx.fillRect(0, i, 200, 1);
+                    }
+                    for (let i = 0; i < 8; i++) {
+                        cx.fillStyle = `rgba(0, 255, 65, ${Math.random()*0.15})`;
+                        cx.fillRect(Math.random()*200, Math.random()*120, Math.random()*40, Math.random()*20);
+                    }
+                    for (let i = 0; i < 40; i++) {
+                        cx.fillStyle = `rgba(0, 255, 65, ${Math.random()*0.3})`;
+                        cx.fillRect(Math.random()*200, Math.random()*120, 1, 1);
+                    }
+                }, 120);
+            });
+        }
+
+        // ==================== قوائم ====================
+        function loadTargets() {
+            const targets = [
+                {n:'عقدة-01', s:'مراقبة', on:true},
+                {n:'عقدة-02', s:'مراقبة', on:true},
+                {n:'عقدة-03', s:'مقفلة', on:false},
+                {n:'عقدة-04', s:'نشطة', on:true},
+                {n:'عقدة-05', s:'مقفلة', on:false},
+            ];
+            const list = document.getElementById('targetList');
+            if (list) list.innerHTML = targets.map(t => `
+                <div class="net-row" onclick="notify('${t.n}', 'الحالة: ${t.s}')">
+                    <div class="net-dot ${t.on ? '' : 'off'}"></div>
+                    <div style="flex:1;">${t.n}</div>
+                    <div style="color:${t.on ? '#00ff41' : '#00520f'};">${t.s}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadNetwork() {
+            const computers = [
+                {ip:'10.0.0.1', n:'العقدة المركزية', on:true},
+                {ip:'10.0.0.7', n:'خادم التشفير', on:true},
+                {ip:'10.0.0.13', n:'قناة المراقبة', on:true},
+                {ip:'10.0.0.21', n:'خادم النسخ', on:true},
+                {ip:'10.0.0.30', n:'عقدة احتياطية', on:false},
+                {ip:'10.0.0.42', n:'بوابة الخروج', on:true},
+            ];
+            const list = document.getElementById('networkList');
+            if (list) list.innerHTML = computers.map(c => `
+                <div class="net-row" onclick="notify('${c.n}', 'العنوان: ${c.ip}')">
+                    <div class="net-dot ${c.on ? '' : 'off'}"></div>
+                    <div style="flex:1;">
+                        <div>${c.n}</div>
+                        <div style="font-size:9px; color:#00520f;">${c.ip}</div>
+                    </div>
+                    <div style="font-size:10px; color:${c.on ? '#00ff41' : '#00520f'};">${c.on ? 'متصل' : 'منقطع'}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadDatabase() {
+            const records = [];
+            for (let i = 1; i <= 10; i++) {
+                const states = ['مشفر', 'مقفل', 'نشط'];
+                records.push({
+                    id: 'ND-' + String(i).padStart(3, '0'),
+                    node: 'عقدة-' + i,
+                    st: states[Math.floor(Math.random()*3)],
+                    enc: randomHash(8).toUpperCase()
+                });
+            }
+            const body = document.getElementById('dbBody');
+            if (body) body.innerHTML = records.map(r => `
+                <tr onclick="notify('${r.id}', 'العقدة: ${r.node} - ${r.st}')">
+                    <td>${r.id}</td><td>${r.node}</td>
+                    <td style="color:#00ff41;">${r.st}</td>
+                    <td>${r.enc}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ==================== الخريطة ====================
+        function initMap() {
+            const map = document.getElementById('trackMap');
+            if (!map || map.children.length) return;
+            const points = [
+                {x:15,y:30},{x:45,y:22},{x:58,y:45},{x:72,y:35},{x:28,y:60},{x:85,y:68},{x:38,y:78}
+            ];
+            points.forEach((p, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'map-point';
+                dot.style.left = p.x + '%';
+                dot.style.top = p.y + '%';
+                dot.style.animationDelay = (i * 0.3) + 's';
+                dot.onclick = () => notify('عقدة تتبع', 'الإحداثيات: ' + p.x + ':' + p.y);
+                map.appendChild(dot);
+            });
+        }
+
+        // ==================== الأدوات ====================
+        function toolOut(text, dim) {
+            const out = document.getElementById('toolOutput');
+            out.innerHTML += `<div style="color:${dim ? '#007a1f' : '#00ff41'};">${text}</div>`;
+            out.scrollTop = out.scrollHeight;
+        }
+
+        function toolDDOS() {
+            toolOut('\n[بدء] هجوم DDoS - محاكاة...', false);
+            let req = 0;
+            const iv = setInterval(() => {
+                req += Math.floor(Math.random()*8000)+3000;
+                toolOut(`[هجوم] الطلبات: ${req}`, true);
+                if (req > 40000) {
+                    clearInterval(iv);
+                    toolOut('[نهاية] المحاكاة اكتملت.');
+                }
+            }, 350);
+        }
+
+        function toolInject() {
+            toolOut('\n[بدء] حقن الحمولة - محاكاة...', false);
+            const payloads = ['0x4F2A...', '0x9B1C...', '0xE7D3...'];
+            payloads.forEach((p, i) => setTimeout(() => toolOut(`[حمولة] ${p} > مثبتة`, true), i*500));
+            setTimeout(() => toolOut('[نهاية] المحاكاة اكتملت.'), 1800);
+        }
+
+        function toolScanPorts() {
+            toolOut('\n[بدء] مسح المنافذ - محاكاة...', false);
+            const ports = [21, 22, 80, 443, 8080];
+            ports.forEach((p, i) => setTimeout(() =>
+                toolOut(`[منفذ] ${p}: ${Math.random() > 0.4 ? 'مفتوح' : 'مغلق'}`, true), i*400));
+            setTimeout(() => toolOut('[نهاية] المسح اكتمل.'), 2300);
+        }
+
+        function toolBypass() {
+            toolOut('\n[بدء] تجاوز الحماية - محاكاة...', false);
+            const steps = ['تحليل الطبقة الأولى...', 'توليد مفتاح مؤقت...', 'تدوير العقد...', 'القناة جاهزة.'];
+            steps.forEach((s, i) => setTimeout(() => toolOut(`[خطوة] ${s}`, true), i*600));
+        }
+
+        function openSecret(name) {
+            notify('فتح: ' + name, 'فك التشفير جارٍ...');
+            setTimeout(() => notify(name, 'المحتوى محمي - صلاحيات أعلى مطلوبة'), 1800);
+        }
+
+        // ==================== CMD ====================
+        const cmdField = document.getElementById('cmdField');
+        const cmdScreen = document.getElementById('cmdScreen');
+
+        cmdField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const cmd = this.value.trim();
+                this.value = '';
+                const line = document.createElement('div');
+                line.textContent = 'C:\\MUST\\> ' + cmd;
+                cmdScreen.appendChild(line);
+
+                const responses = {
+                    'مساعدة': 'الأوامر: فحص، عقد، تشفير، مسح، خروج',
+                    'فحص': 'تم الفحص - الأنظمة مستقرة',
+                    'عقد': '7 عقد نشطة - جميعها مشفرة',
+                    'تشفير': 'AES-256 مفعّل على كل القنوات',
+                    'مسح': 'تم المسح',
+                    'خروج': 'جاري الإغلاق...'
+                };
+
+                const res = document.createElement('div');
+                res.style.color = '#007a1f';
+                res.textContent = responses[cmd] || `"${cmd}" ليس أمراً معترفاً به`;
+                cmdScreen.appendChild(res);
+                cmdScreen.scrollTop = cmdScreen.scrollHeight;
+
+                if (cmd === 'مسح') setTimeout(() => { cmdScreen.innerHTML = ''; }, 400);
+                if (cmd === 'خروج') setTimeout(closeXPDesktop, 500);
+            }
+        });
+
+        // ==================== الساعة ====================
+        setInterval(() => {
+            const now = new Date();
+            const h = now.getHours() % 12 || 12;
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const el = document.getElementById('taskbarClock');
+            if (el) el.textContent = `${h}:${m} ${now.getHours() >= 12 ? 'م' : 'ص'}`;
+        }, 1000);
+
+        // ==================== سحب النوافذ ====================
+        let dragWin = null, offX = 0, offY = 0;
+
+        document.addEventListener('mousedown', (e) => {
+            const bar = e.target.closest('.xp-window-titlebar');
+            if (bar) {
+                dragWin = bar.closest('.xp-window');
+                offX = e.clientX - dragWin.offsetLeft;
+                offY = e.clientY - dragWin.offsetTop;
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (dragWin) {
+                dragWin.style.left = (e.clientX - offX) + 'px';
+                dragWin.style.top = (e.clientY - offY) + 'px';
+                dragWin.style.insetInlineStart = 'auto';
+                dragWin.style.right = 'auto';
+            }
+        });
+
+        document.addEventListener('mouseup', () => { dragWin = null; });
+
+        // دعم اللمس للسحب
+        document.addEventListener('touchstart', (e) => {
+            const bar = e.target.closest('.xp-window-titlebar');
+            if (bar) {
+                dragWin = bar.closest('.xp-window');
+                const t = e.touches[0];
+                offX = t.clientX - dragWin.offsetLeft;
+                offY = t.clientY - dragWin.offsetTop;
+            }
+        }, {passive: true});
+
+        document.addEventListener('touchmove', (e) => {
+            if (dragWin) {
+                const t = e.touches[0];
+                dragWin.style.left = (t.clientX - offX) + 'px';
+                dragWin.style.top = (t.clientY - offY) + 'px';
+                dragWin.style.insetInlineStart = 'auto';
+                dragWin.style.right = 'auto';
+                e.preventDefault();
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchend', () => { dragWin = null; });
+
+        // ==================== حماية ====================
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // ==================== تشغيل ====================
+        typeBootLine();
+    </script>
+</body>
+</html>
